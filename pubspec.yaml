@@ -52,6 +52,7 @@ dependencies:
   nfc_manager:
   lite_rolling_switch:
   geolocator:
+  permission_handler:
 dev_dependencies:
   flutter_test:
     sdk: flutter
