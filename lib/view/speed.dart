@@ -24,7 +24,7 @@ class _ListenLocationState extends State<ListenLocationWidget> {
   }
 
   Future<void> _listenLocation() async {
-    /* _locationSubscription =
+     _locationSubscription =
         location.onLocationChanged.handleError((dynamic err) {
       setState(() {
         _error = err.code;
@@ -35,7 +35,7 @@ class _ListenLocationState extends State<ListenLocationWidget> {
         _error = 'null';
         _location = currentLocation;
       });
-    });*/
+    });
   }
 
   Future<void> _stopListen() async {
@@ -53,7 +53,7 @@ class _ListenLocationState extends State<ListenLocationWidget> {
     )).listen((position) {
       var speedInMps =
       position.speed.toStringAsPrecision(2); // this is your speed
-      print(((int.parse(speedInMps)/ 1000)* 3600 ).toString());
+      // print(((int.parse(speedInMps)/ 1000)* 3600 ).toString());
     });
 
 // Check if location is null

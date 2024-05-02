@@ -48,39 +48,6 @@ class _HomeMapPageState extends State<HomeMapPage> {
   @override
   void initState() {
     super.initState();
-    // WidgetsFlutterBinding.ensureInitialized().waitUntilFirstFrameRasterized.then((value) {
-    //   WoltModalSheet.show<void>(
-    //     enableDrag: false,
-    //     barrierDismissible: false,
-    //     pageIndexNotifier: ModalSheetUtils.pageIndexNotifier,
-    //     context: context,
-    //     pageListBuilder: (modalSheetContext) {
-    //       final textTheme = Theme.of(context).textTheme;
-    //       return [
-    //         ModalSheetUtils.page1(modalSheetContext, textTheme),
-    //         ModalSheetUtils.page2(modalSheetContext, textTheme),
-    //         ModalSheetUtils.page3(modalSheetContext, textTheme),
-    //       ];
-    //     },
-    //     modalTypeBuilder: (context) {
-    //       final size = MediaQuery.of(context).size.width;
-    //       if (size < 768.0) {
-    //         return WoltModalType.bottomSheet;
-    //       } else {
-    //         return WoltModalType.dialog;
-    //       }
-    //     },
-    //     onModalDismissedWithBarrierTap: () {
-    //       debugPrint('Closed modal sheet with barrier tap');
-    //       Navigator.of(context).pop();
-    //       ModalSheetUtils.pageIndexNotifier.value = 0;
-    //     },
-    //     maxDialogWidth: 560,
-    //     minDialogWidth: 400,
-    //     minPageHeight: 0.0,
-    //     maxPageHeight: 0.9,
-    //   );
-    // });
   }
 
   @override
@@ -94,6 +61,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
 
   PanelController panelController = PanelController();
   double totalPay = 0;
+  bool showMarker=true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,6 +102,14 @@ class _HomeMapPageState extends State<HomeMapPage> {
                     myLocationEnabled: true,
                     initialCameraPosition: initialCameraPosition,
                     mapType: mapType,
+                    onCameraMove: (_){
+                      if(_.zoom>13.5){
+                        showMarker = true;
+                      }else{
+                        showMarker = false;
+                      }
+                      setState(() {});
+                    },
                     onMapCreated: (controller) async {
                       String mapStyle = await rootBundle.loadString('assets/map_style.json');
                       controller.setMapStyle(mapStyle);
@@ -161,7 +137,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
                         homeViewModel.getDrawPolylineGreen(userTrip.tpPolyLine!);
                       }
                     },
-                    markers: homeViewModel.markers.values.toSet(),
+                    markers: showMarker?homeViewModel.markers.values.toSet():{},
                     polylines: homeViewModel.polyLines,
                   ),
 
@@ -645,9 +621,17 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                     Future.sync(() async {
                                                       isNfcAvailable = (Platform.isAndroid||Platform.isIOS)&&await NfcManager.instance.isAvailable();
                                                       setState(() {});
+                                                      print(isNfcAvailable);
                                                       if(isNfcAvailable!){
-                                                        NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-                                                          List<int> idList = tag.data["ndef"]['identifier'];
+                                                        NfcManager.instance.startSession(
+                                                          onError: (_)
+                                                            async {
+                                                              print(_.message);
+                                                              print(_.type);
+                                                              print(_.details);
+                                                            },
+                                                            onDiscovered: (NfcTag tag) async {
+                                                          List<int> idList = tag.data["mifare"]['identifier'];
                                                           String id ='';
                                                           for(var e in idList){
                                                             if(id==''){
@@ -657,7 +641,10 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                             }
                                                           }
                                                           var cardId=id.toUpperCase();
+                                                          print('id: '+id);
+                                                          await NfcManager.instance.stopSession();
                                                           if(cardId =="04:36:56:FA:4C:78:80"){
+                                                            print("object");
                                                             double userBalance = 0;
                                                             await FirebaseFirestore.instance.collection("Account").doc("0").get().then((event) {
                                                               userBalance = double.parse(event.data()!['balance'].toString());
@@ -673,7 +660,8 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                                 content: Text("User don't have enough balance"),
                                                               ));
                                                             }
-                                                          }else{
+                                                          }
+                                                          else{
                                                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                                                               content: Text("Card is Not registered"),
                                                             ));

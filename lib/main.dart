@@ -12,7 +12,6 @@ main()async{
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await Permission.location.request();
-
   runApp(MyApp());
 }
 
