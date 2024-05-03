@@ -152,12 +152,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
                               : ordersTripModel.status == Const.tripStatusTripPaying
                               ? 465
                               : 400)*(bodyOpacity)), ordersTripModel?.status == Const.tripStatusTripStarted ? 150 : 100),
-                          child: Container(
-                            height: 100,
-                            width: 100,
-                            color: Colors.red,
-                            child: ListenLocationWidget(),
-                          ),
+                          child: ListenLocationWidget(),
                         ),
                         SlidingUpPanel(
                           isDraggable: true,
@@ -268,7 +263,8 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                 // )
                                               ],
                                             );
-                                          } else if (ordersTripModel.status == Const.tripStatusSearchDriver) {
+                                          }
+                                           else if (ordersTripModel.status == Const.tripStatusSearchDriver) {
                                             return Column(
                                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                               children: [
@@ -374,7 +370,8 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                 ),
                                               ],
                                             );
-                                          } else if (ordersTripModel.status == Const.tripStatusWaitingDriver) {
+                                          }
+                                           else if (ordersTripModel.status == Const.tripStatusWaitingDriver) {
                                             return Column(
                                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                               children: [
@@ -472,7 +469,8 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                 ),
                                               ],
                                             );
-                                          } else if (ordersTripModel.status == Const.tripStatusTripStarted) {
+                                          }
+                                           else if (ordersTripModel.status == Const.tripStatusTripStarted) {
                                             return Column(
                                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                               children: [
@@ -533,7 +531,10 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                       buttonColor: Colors.red.shade700,
                                                       action: () async {
                                                         isStarted = false;
-                                                        FirebaseFirestore.instance.collection("Orders").doc("0").update({"status": Const.tripStatusTripPaying});
+                                                        FirebaseFirestore.instance.collection("Orders").doc("0").update({
+                                                          "status": Const.tripStatusTripPaying,
+                                                          "total":totalPay,
+                                                        });
                                                         return true;
                                                       },
                                                       label: Text(
@@ -563,9 +564,9 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                   height: 20,
                                                 ),
                                                 SizedBox(
-                                                  height: MediaQuery.sizeOf(context).width / 2.2,
+                                                  height: MediaQuery.sizeOf(context).width/2.2,
                                                   child: Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                                     child: Column(
                                                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                       children: [
@@ -584,7 +585,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                           children: [
                                                             Text("subtotal"),
                                                             Spacer(),
-                                                            Text(totalPay.toString() + " AED"),
+                                                            Text(ordersTripModel.total.toString() + " AED"),
                                                           ],
                                                         ),
                                                         Container(
@@ -595,7 +596,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                           children: [
                                                             Text("Add 5% VAT"),
                                                             Spacer(),
-                                                            Text((totalPay * 0.05).toStringAsFixed(2) + " AED"),
+                                                            Text((ordersTripModel.total! * 0.05).toStringAsFixed(2) + " AED"),
                                                           ],
                                                         ),
                                                         Container(
@@ -606,7 +607,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                           children: [
                                                             Text("Total"),
                                                             Spacer(),
-                                                            Text((totalPay + (totalPay * 0.05)).toStringAsFixed(2) + " AED"),
+                                                            Text((ordersTripModel.total! + (ordersTripModel.total! * 0.05)).toStringAsFixed(2) + " AED"),
                                                           ],
                                                         ),
                                                       ],
