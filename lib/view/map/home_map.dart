@@ -410,7 +410,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                       children: [
                                                         Text(
                                                           ordersTripModel.userName!,
-                                                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+                                                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                                                         ),
                                                         Text(
                                                           ordersTripModel.userNumber!,
