@@ -53,6 +53,7 @@ dependencies:
   lite_rolling_switch:
   geolocator:
   permission_handler:
+  kdgaugeview:
 dev_dependencies:
   flutter_test:
     sdk: flutter

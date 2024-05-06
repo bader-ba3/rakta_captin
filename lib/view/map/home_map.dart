@@ -95,50 +95,54 @@ class _HomeMapPageState extends State<HomeMapPage> {
             return GetBuilder<HomeViewModel>(builder: (homeViewModel) {
               return Stack(
                 children: [
-                  GoogleMap(
-                    myLocationButtonEnabled: false,
-                    compassEnabled: true,
-                    zoomControlsEnabled: false,
-                    myLocationEnabled: true,
-                    initialCameraPosition: initialCameraPosition,
-                    mapType: mapType,
-                    onCameraMove: (_){
-                      if(_.zoom>13.5){
-                        showMarker = true;
-                      }else{
-                        showMarker = false;
-                      }
-                      setState(() {});
-                    },
-                    onMapCreated: (controller) async {
-                      String mapStyle = await rootBundle.loadString('assets/map_style.json');
-                      controller.setMapStyle(mapStyle);
-                      homeViewModel.controller = Completer();
-                      homeViewModel.controller.complete(controller);
+                  StatefulBuilder(
+                    builder: (context,mapSetstate) {
+                      return GoogleMap(
+                        myLocationButtonEnabled: false,
+                        compassEnabled: true,
+                        zoomControlsEnabled: false,
+                        myLocationEnabled: true,
+                        initialCameraPosition: initialCameraPosition,
+                        mapType: mapType,
+                        onCameraMove: (_){
+                          if(_.zoom>13.5){
+                            showMarker = true;
+                          }else{
+                            showMarker = false;
+                          }
+                          mapSetstate(() {});
+                        },
+                        onMapCreated: (controller) async {
+                          String mapStyle = await rootBundle.loadString('assets/map_style.json');
+                          controller.setMapStyle(mapStyle);
+                          homeViewModel.controller = Completer();
+                          homeViewModel.controller.complete(controller);
 
-                      /*    Utils().getMyLocation().then((value) {
-                      print(value);
-                      homeViewModel.setMarker(
-                          value, "location_arrow_icon", "myId","0");
-                      if (userTrip.tpRider == null) {
-                        homeViewModel.animateCamera(value);
-                      }
-                      homeViewModel
-                          .getLocationName(value)
-                          .then((value) => Variables.currentLocation = value);
-                      Variables.currentLoc = value;
-                    });*/
-                      if (userTrip.tpRider == null) {
-                        homeViewModel.setRiderMarker();
-                      } else {
-                        homeViewModel.setMarker(userTrip.tpDest!.location!, "location_pin", "location_pin2", "0");
-                        homeViewModel.setMarker(userTrip.tpLocation!.last.location!, "car_gry", "car_gry", "0");
-                        homeViewModel.animateCamera(userTrip.tpLocation!.last.location!);
-                        homeViewModel.getDrawPolylineGreen(userTrip.tpPolyLine!);
-                      }
-                    },
-                    markers: showMarker?homeViewModel.markers.values.toSet():{},
-                    polylines: homeViewModel.polyLines,
+                          /*    Utils().getMyLocation().then((value) {
+                          print(value);
+                          homeViewModel.setMarker(
+                              value, "location_arrow_icon", "myId","0");
+                          if (userTrip.tpRider == null) {
+                            homeViewModel.animateCamera(value);
+                          }
+                          homeViewModel
+                              .getLocationName(value)
+                              .then((value) => Variables.currentLocation = value);
+                          Variables.currentLoc = value;
+                        });*/
+                          if (userTrip.tpRider == null) {
+                            homeViewModel.setRiderMarker();
+                          } else {
+                            homeViewModel.setMarker(userTrip.tpDest!.location!, "location_pin", "location_pin2", "0");
+                            homeViewModel.setMarker(userTrip.tpLocation!.last.location!, "car_gry", "car_gry", "0");
+                            homeViewModel.animateCamera(userTrip.tpLocation!.last.location!);
+                            homeViewModel.getDrawPolylineGreen(userTrip.tpPolyLine!);
+                          }
+                        },
+                        markers: showMarker?homeViewModel.markers.values.toSet():{},
+                        polylines: homeViewModel.polyLines,
+                      );
+                    }
                   ),
 
                   StatefulBuilder(builder: (context, setstate) {

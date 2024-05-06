@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:kdgaugeview/kdgaugeview.dart';
 import 'package:location/location.dart';
 
 class ListenLocationWidget extends StatefulWidget {
@@ -15,10 +16,12 @@ class _ListenLocationState extends State<ListenLocationWidget> {
   LocationData? _location;
   late StreamSubscription<LocationData> _locationSubscription;
   late String _error;
+  late GlobalKey<KdGaugeViewState> key ;
 
   @override
   void initState() {
     super.initState();
+    key = GlobalKey<KdGaugeViewState>();
     _listenLocation();
   }
 
@@ -33,6 +36,9 @@ class _ListenLocationState extends State<ListenLocationWidget> {
           setState(() {
             _error = 'null';
             _location = currentLocation;
+            if(_location!.speed! * 3600 / 1000>0){
+              key.currentState!.updateSpeed(_location!.speed! * 3600 / 1000, animate: true,duration: Duration(milliseconds: 400));
+            }
           });
         });
   }
@@ -48,22 +54,37 @@ class _ListenLocationState extends State<ListenLocationWidget> {
       padding: const EdgeInsets.symmetric(vertical: 8.0,horizontal: 4),
       child: Container(
         padding: const EdgeInsets.all( 8.0),
-        decoration: BoxDecoration(color: Colors.white,borderRadius: BorderRadius.circular(50),border: Border.all(color: Colors.black)),
-        width: 100,
-        height: 100,
+        decoration: BoxDecoration(color: Colors.white,borderRadius: BorderRadius.circular(100),border: Border.all(color: Colors.black)),
+        width: 120,
+        height: 120,
         child: Center(
-          child: Text(
-            _location == null?
-            "0\nKM/h"
-                :'${_location!.speed != null && _location!.speed! * 3600 / 1000 > 0 ? (_location!.speed! * 3600 / 1000).toStringAsFixed(2) : 0}\nKM/h',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              fontSize: 20,
-              letterSpacing: 4,
+          child: Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: KdGaugeView(
+              subDivisionCircleColors: Colors.transparent,
+              divisionCircleColors: Colors.transparent,
+              minMaxTextStyle: TextStyle(color: Colors.transparent),
+              unitOfMeasurementTextStyle: TextStyle(color: Colors.transparent,fontSize: 12),
+              gaugeWidth: 10,
+              key: key,
+              minSpeed: 0,
+              maxSpeed: 100,
+              speed: 0,
+              animate: true,
             ),
           ),
+          // child: Text(
+          //   _location == null?
+          //   "0\nKM/h"
+          //       :'${_location!.speed != null && _location!.speed! * 3600 / 1000 > 0 ? (_location!.speed! * 3600 / 1000).toStringAsFixed(2) : 0}\nKM/h',
+          //   textAlign: TextAlign.center,
+          //   style: TextStyle(
+          //     fontWeight: FontWeight.bold,
+          //     color: Colors.black,
+          //     fontSize: 20,
+          //     letterSpacing: 4,
+          //   ),
+          // ),
         ),
       ),
     );
