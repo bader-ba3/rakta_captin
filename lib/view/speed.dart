@@ -65,6 +65,7 @@ class _ListenLocationState extends State<ListenLocationWidget> {
               divisionCircleColors: Colors.transparent,
               minMaxTextStyle: TextStyle(color: Colors.transparent),
               unitOfMeasurementTextStyle: TextStyle(color: Colors.transparent,fontSize: 12),
+              speedTextStyle: TextStyle(fontSize:40,color: Colors.black),
               gaugeWidth: 10,
               key: key,
               minSpeed: 0,

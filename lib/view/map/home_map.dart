@@ -58,7 +58,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
     super.dispose();
   }
   bool? isNfcAvailable;
-
+  bool isSaqrLoading = false;
   PanelController panelController = PanelController();
   double totalPay = 0;
   bool showMarker=true;
@@ -426,13 +426,6 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                 InkWell(
                                                   onTap: () async {
                                                     FirebaseFirestore.instance.collection("Orders").doc("0").update({"status": Const.tripStatusTripStarted, "date": DateTime.now().toString()});
-                                                    // isStarted = true;
-                                                    // total = 3;
-                                                    // while (isStarted) {
-                                                    //   await Future.delayed(Duration(seconds: 3));
-                                                    //   total = total + 0.75;
-                                                    //   FirebaseFirestore.instance.collection("Orders").doc("0").set({"total": total}, SetOptions(merge: true));
-                                                    // }
                                                   },
                                                   child: Container(
                                                     width: 300,
@@ -557,7 +550,8 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                 ),
                                               ],
                                             );
-                                          } else if (ordersTripModel.status == Const.tripStatusTripPaying) {
+                                          }
+                                           else if (ordersTripModel.status == Const.tripStatusTripPaying) {
                                             return Column(
                                               children: [
                                                 Text(
@@ -621,71 +615,84 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                                 SizedBox(
                                                   height: 20,
                                                 ),
-                                                InkWell(
-                                                  onTap: () async {
-                                                    Future.sync(() async {
-                                                      isNfcAvailable = (Platform.isAndroid||Platform.isIOS)&&await NfcManager.instance.isAvailable();
-                                                      setState(() {});
-                                                      print(isNfcAvailable);
-                                                      if(isNfcAvailable!){
-                                                        NfcManager.instance.startSession(
-                                                          onError: (_)
-                                                            async {
-                                                              print(_.message);
-                                                              print(_.type);
-                                                              print(_.details);
-                                                            },
-                                                            onDiscovered: (NfcTag tag) async {
-                                                          List<int> idList = tag.data["mifare"]['identifier'];
-                                                          String id ='';
-                                                          for(var e in idList){
-                                                            if(id==''){
-                                                              id="${e.toRadixString(16).padLeft(2,"0")}";
-                                                            }else{
-                                                              id="$id:${e.toRadixString(16).padLeft(2,"0")}";
-                                                            }
-                                                          }
-                                                          var cardId=id.toUpperCase();
-                                                          print('id: '+id);
-                                                          await NfcManager.instance.stopSession();
-                                                          if(cardId =="04:36:56:FA:4C:78:80"){
-                                                            print("object");
-                                                            double userBalance = 0;
-                                                            await FirebaseFirestore.instance.collection("Account").doc("0").get().then((event) {
-                                                              userBalance = double.parse(event.data()!['balance'].toString());
+                                                StatefulBuilder(
+                                                  builder: (context,saqrSetstate) {
+                                                    return InkWell(
+                                                      onTap: isSaqrLoading?null:() async {
+                                                          isNfcAvailable = (Platform.isAndroid||Platform.isIOS)&&await NfcManager.instance.isAvailable();
+                                                          isSaqrLoading=true;
+                                                          saqrSetstate(() {});
+                                                          print(isNfcAvailable);
+                                                          if(isNfcAvailable!){
+                                                            NfcManager.instance.startSession(
+                                                              onError: (_)
+                                                                async {
+                                                                  print(_.message);
+                                                                  print(_.type);
+                                                                  print(_.details);
+                                                                  isSaqrLoading=false;
+                                                                  saqrSetstate(() {});
+                                                                },
+                                                                onDiscovered: (NfcTag tag) async {
+                                                              List<int> idList = tag.data["mifare"]['identifier'];
+                                                              String id ='';
+                                                              for(var e in idList){
+                                                                if(id==''){
+                                                                  id="${e.toRadixString(16).padLeft(2,"0")}";
+                                                                }else{
+                                                                  id="$id:${e.toRadixString(16).padLeft(2,"0")}";
+                                                                }
+                                                              }
+                                                              var cardId=id.toUpperCase();
+                                                              print('id: '+id);
+                                                              await NfcManager.instance.stopSession();
+                                                              if(cardId =="04:36:56:FA:4C:78:80"){
+                                                                print("object");
+                                                                double userBalance = 0;
+                                                                await FirebaseFirestore.instance.collection("Account").doc("0").get().then((event) {
+                                                                  userBalance = double.parse(event.data()!['balance'].toString());
+                                                                });
+                                                                if(userBalance-(totalPay + (totalPay * 0.05))>0){
+                                                                  FirebaseFirestore.instance.collection("Account").doc("0").update({"balance":(userBalance-(totalPay + (totalPay * 0.05))).toString()});
+                                                                  FirebaseFirestore.instance.collection("Orders").doc("0").delete();
+                                                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                                                    content: Text("Payment completed successfully"),
+                                                                  ));
+                                                                }else{
+                                                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                                                    content: Text("User don't have enough balance"),
+                                                                  ));
+                                                                }
+                                                                isSaqrLoading=false;
+                                                                saqrSetstate(() {});
+                                                              }
+                                                              else{
+                                                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                                                  content: Text("Card is Not registered"),
+                                                                ));
+                                                                isSaqrLoading=false;
+                                                                saqrSetstate(() {});
+                                                              }
                                                             });
-                                                            if(userBalance-(totalPay + (totalPay * 0.05))>0){
-                                                              FirebaseFirestore.instance.collection("Account").doc("0").update({"balance":(userBalance-(totalPay + (totalPay * 0.05))).toString()});
-                                                              FirebaseFirestore.instance.collection("Orders").doc("0").delete();
-                                                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                                                content: Text("Payment completed successfully"),
-                                                              ));
-                                                            }else{
-                                                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                                                content: Text("User don't have enough balance"),
-                                                              ));
-                                                            }
+                                                          }else{
+                                                            isSaqrLoading=false;
+                                                            saqrSetstate(() {});
                                                           }
-                                                          else{
-                                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                                              content: Text("Card is Not registered"),
-                                                            ));
-                                                          }
-                                                        });
-                                                      }
-                                                    });
-
-                                                  },
-                                                  child: Container(
-                                                    width: 300,
-                                                    height: 50,
-                                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.black)),
-                                                    child: Center(
-                                                        child: Text(
-                                                      "Pay With Saqr Card",
-                                                      style: TextStyle(color: Colors.blueAccent.shade700, fontSize: 22, fontWeight: FontWeight.bold),
-                                                    )),
-                                                  ),
+                                                      },
+                                                      child: Container(
+                                                        width: 300,
+                                                        height: 50,
+                                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.black)),
+                                                        child: Center(
+                                                            child:isSaqrLoading
+                                                            ?CircularProgressIndicator(color: Colors.black,)
+                                                            :Text(
+                                                          "Pay With Saqr Card",
+                                                          style: TextStyle(color: Colors.blueAccent.shade700, fontSize: 22, fontWeight: FontWeight.bold),
+                                                        )),
+                                                      ),
+                                                    );
+                                                  }
                                                 ),
                                                 SizedBox(
                                                   height: 20,
@@ -819,14 +826,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
                                           ),
                                           InkWell(
                                             onTap: () async {
-                                              FirebaseFirestore.instance.collection("Orders").doc("0").update({"status": Const.tripStatusTripStarted});
-                                              isStarted = true;
-                                              total = 3;
-                                              while (isStarted) {
-                                                await Future.delayed(Duration(seconds: 3));
-                                                total = total + 0.75;
-                                                FirebaseFirestore.instance.collection("Orders").doc("0").set({"total": total}, SetOptions(merge: true));
-                                              }
+                                              FirebaseFirestore.instance.collection("Orders").doc("0").update({"status": Const.tripStatusTripStarted, "date": DateTime.now().toString()});
                                             },
                                             child: Container(
                                               padding: EdgeInsets.symmetric(horizontal: 8),
