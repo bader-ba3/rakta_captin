@@ -19,7 +19,7 @@ class PlaceViewModel extends GetxController {
     };
     Map<String, String> headers = {
       "Accept": "*/*",
-      "X-Goog-Api-Key": "AIzaSyDI6RQ6KLpxiQEtyTLlUmxH4Osm4A7Zhcg",
+      "X-Goog-Api-Key": "AIzaSyARUw-vbD_KeA-AvvQZp7VmOMkosTq0UZQ",
       "X-Goog-FieldMask":
           "places.displayName,places.formattedAddress,places.priceLevel,places.location"
     };
@@ -48,7 +48,7 @@ class PlaceViewModel extends GetxController {
     });
     Map<String, String> headers = {
       "Accept": "*/*",
-      "X-Goog-Api-Key": "AIzaSyDI6RQ6KLpxiQEtyTLlUmxH4Osm4A7Zhcg",
+      "X-Goog-Api-Key": "AIzaSyARUw-vbD_KeA-AvvQZp7VmOMkosTq0UZQ",
       "X-Goog-FieldMask":
           "places.displayName,places.formattedAddress,places.priceLevel,places.location"
     };
